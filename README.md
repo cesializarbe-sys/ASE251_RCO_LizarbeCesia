@@ -4,13 +4,13 @@
 
 ---
 
-## 👤 Integrante
+## 👥 Integrantes
 
-| Campo | Detalle |
-|-------|---------|
-| **Nombre** | Cesia (cesia206) |
-| **Proyecto** | ASE251S3_T06 |
-| **Ciclo** | Ciclo Agrícola 2025/26 |
+| Nombre |
+|--------|
+| Cesia Lizarbe Mesajil |
+| Cristhian Yaranga Julian |
+| Shawn Manrique Rojas |
 
 ---
 
@@ -81,11 +81,11 @@ La comunicación entre servicios se realiza mediante **Elastic IPs públicas de 
 
 ---
 
-## 🌐 Comunicación Privada
+## 🌐 Comunicación entre Servicios
 
-La comunicación entre servicios se realiza mediante **IPs Elásticas (Elastic IPs) públicas de AWS**. No se usa una VPN ni red privada interna; el Backend se conecta al SQL Server mediante su IP pública en el puerto 1433, y el Frontend apunta al Backend mediante su IP pública en el puerto 8085.
+La comunicación entre servicios se realiza mediante **IPs Elásticas (Elastic IPs) públicas de AWS**. El Backend se conecta al SQL Server mediante su IP pública en el puerto 1433, y el Frontend apunta al Backend mediante su IP pública en el puerto 8085.
 
-La cadena de conexión del Backend es:
+Cadena de conexión del Backend:
 ```
 jdbc:sqlserver://IP_PUBLICA_SQL:1433;databaseName=aronadb;encrypt=true;trustServerCertificate=true
 ```
@@ -243,7 +243,7 @@ docker logs -f springboot-sqlserver
 ```typescript
 export const environment = {
   production: false,
-  apiUrl: 'http://IP_PUBLICA_BACKEND:8085/api'
+  apiUrl: 'http://44.205.1.117:8085/api'
 };
 ```
 
@@ -279,7 +279,6 @@ dist
 ```bash
 npm run build
 docker build -t cesia206/angular-frontend:1.0 .
-docker images
 docker push cesia206/angular-frontend:1.0
 ```
 
@@ -312,23 +311,28 @@ docker ps
 
 ## 📸 Evidencia de Funcionamiento
 
-### Backend — Swagger UI
-![Backend Swagger](evidencias/backend-swagger.png)
+### ✅ Backend — Swagger UI (API funcionando en EC2 #2)
+<img width="1568" height="784" alt="image" src="https://github.com/user-attachments/assets/9d2c1b09-f41d-4aa0-9ba9-9e3076b22a82" />
 
-> API accesible en `http://IP_PUBLICA_BACKEND:8085/swagger-ui/index.html`
+---
 
-### Frontend — Login
-![Frontend Login](evidencias/frontend-login.png)
+### ✅ Frontend — Dashboard Principal (Angular en EC2 #3)
+<img width="1568" height="783" alt="image" src="https://github.com/user-attachments/assets/781c1178-5252-4316-a1f7-ae1a062d8fec" />
 
-> Aplicación accesible en `http://IP_PUBLICA_FRONTEND`
+---
 
-### Dashboard Principal
-![Dashboard](evidencias/dashboard.png)
+### ✅ Build Docker imagen Angular en VS Code
+<img width="1512" height="786" alt="image" src="https://github.com/user-attachments/assets/41f0b55f-9959-4a5c-935c-6ed031480837" />
 
-> Panel en tiempo real con producción, campos, alertas y usuarios activos.
+---
 
-### Docker Hub — Imágenes
-![Docker Hub](evidencias/dockerhub.png)
+### ✅ Base de Datos — SQL Server ejecutándose (EC2 #1)
+<img width="1568" height="710" alt="image" src="https://github.com/user-attachments/assets/07b0c020-9a6a-4a41-b577-443e842d6f40" />
+
+---
+
+### ✅ Docker Compose en las 3 instancias EC2
+<img width="1512" height="802" alt="image" src="https://github.com/user-attachments/assets/27267bbc-2b94-4478-bb4f-db8c47620836" />
 
 ---
 
@@ -338,7 +342,7 @@ El sistema fue desplegado exitosamente con:
 
 - ✅ Docker + Docker Compose en 3 instancias EC2
 - ✅ SQL Server 2022 corriendo en contenedor con volumen persistente
-- ✅ Spring Boot API REST documentada con Swagger
+- ✅ Spring Boot API REST documentada con Swagger (OAS 3.1)
 - ✅ Frontend Angular servido con NGINX
 - ✅ Imágenes publicadas en Docker Hub
 - ✅ Comunicación entre servicios mediante Elastic IPs de AWS
