@@ -1,333 +1,244 @@
-# ase251_RCO_CesiaLizarbe
+# 🌱 Arona Agrícola — Sistema Web en AWS EC2 con Docker
 
-# 🌐 Despliegue de Sistema Web en AWS EC2 con Docker
-
-## 📌 Descripción del Proyecto
-
-El sistema fue desplegado utilizando una arquitectura distribuida en AWS EC2, separando cada servicio en una instancia independiente para mejorar la organización, escalabilidad y mantenimiento.
-
-## 🏗️ Arquitectura Utilizada
-
-| Instancia EC2 | Servicio            |
-| ------------- | ------------------- |
-| EC2 #1        | SQL Server          |
-| EC2 #2        | Backend Spring Boot |
-| EC2 #3        | Frontend Angular    |
-
-La comunicación entre servicios se realizó mediante IPs públicas (Elastic IP).
+> Sistema de gestión agrícola desplegado en arquitectura distribuida usando Docker, AWS EC2, Angular y Spring Boot.
 
 ---
 
-# 🚀 1. Creación de Instancias EC2
+## 👤 Integrante
 
-Se crearon 3 instancias EC2 con Ubuntu 24.04.
-
-## Configuración utilizada
-
-| Configuración | Valor             |
-| ------------- | ----------------- |
-| AMI           | Ubuntu 24.04      |
-| Tipo          | t3.small          |
-| Red           | VPC personalizada |
-| IP            | Elastic IP        |
+| Campo | Detalle |
+|-------|---------|
+| **Nombre** | Cesia (cesia206) |
+| **Proyecto** | ASE251S3_T06 |
+| **Ciclo** | Ciclo Agrícola 2025/26 |
 
 ---
 
-# 🔐 2. Configuración de Security Groups
+## 📋 Descripción del Proyecto
 
-## EC2 SQL Server
+**Arona Agrícola** es una plataforma web de gestión para la Sociedad Agrícola Arona S.A. Permite a administradores y encargados gestionar campos de cultivo, producción, enfermedades, calidad de cosecha y actividades en tiempo real.
 
-| Puerto | Uso        |
-| ------ | ---------- |
-| 22     | SSH        |
-| 1433   | SQL Server |
+El sistema fue desplegado en **3 instancias EC2 independientes en AWS**, cada una corriendo un servicio en Docker:
 
-## EC2 Backend
+| Instancia | Servicio |
+|-----------|----------|
+| EC2 #1 | SQL Server 2022 |
+| EC2 #2 | Backend Spring Boot |
+| EC2 #3 | Frontend Angular |
 
-| Puerto | Uso             |
-| ------ | --------------- |
-| 22     | SSH             |
-| 8085   | API Spring Boot |
-
-## EC2 Frontend
-
-| Puerto | Uso     |
-| ------ | ------- |
-| 22     | SSH     |
-| 80     | Angular |
+La comunicación entre servicios se realiza mediante **Elastic IPs públicas de AWS**.
 
 ---
 
-# 🐳 3. Instalación de Docker en las Instancias
+## 🛠️ Tecnologías Utilizadas
 
-## Actualizar paquetes
+- **Frontend:** Angular 17+ (servido con NGINX)
+- **Backend:** Spring Boot (Java, API REST)
+- **Base de Datos:** SQL Server 2022
+- **Contenedores:** Docker + Docker Compose
+- **Cloud:** AWS EC2 (Ubuntu 24.04, instancias t3.small)
+- **Registro de imágenes:** Docker Hub
+- **Documentación API:** Swagger / OpenAPI 3.1
+
+---
+
+## 🏗️ Arquitectura
+
+```
+┌─────────────────────────────────────────────────────┐
+│                     AWS Cloud                       │
+│                                                     │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │
+│  │   EC2 #1     │  │   EC2 #2     │  │  EC2 #3   │  │
+│  │  SQL Server  │◄─│  Spring Boot │◄─│  Angular  │  │
+│  │  Port: 1433  │  │  Port: 8085  │  │  Port: 80 │  │
+│  └──────────────┘  └──────────────┘  └───────────┘  │
+│   Elastic IP        Elastic IP        Elastic IP     │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔐 Configuración de Security Groups
+
+### EC2 #1 — SQL Server
+| Puerto | Protocolo | Uso |
+|--------|-----------|-----|
+| 22 | TCP | SSH |
+| 1433 | TCP | SQL Server |
+
+### EC2 #2 — Backend Spring Boot
+| Puerto | Protocolo | Uso |
+|--------|-----------|-----|
+| 22 | TCP | SSH |
+| 8085 | TCP | Spring Boot API |
+
+### EC2 #3 — Frontend Angular
+| Puerto | Protocolo | Uso |
+|--------|-----------|-----|
+| 22 | TCP | SSH |
+| 80 | TCP | Angular (NGINX) |
+
+---
+
+## 🌐 Comunicación Privada
+
+La comunicación entre servicios se realiza mediante **IPs Elásticas (Elastic IPs) públicas de AWS**. No se usa una VPN ni red privada interna; el Backend se conecta al SQL Server mediante su IP pública en el puerto 1433, y el Frontend apunta al Backend mediante su IP pública en el puerto 8085.
+
+La cadena de conexión del Backend es:
+```
+jdbc:sqlserver://IP_PUBLICA_SQL:1433;databaseName=aronadb;encrypt=true;trustServerCertificate=true
+```
+
+---
+
+## 🔧 Variables de Entorno Utilizadas
+
+### Backend (Spring Boot)
+| Variable | Descripción |
+|----------|-------------|
+| `PORT` | Puerto del servidor (8085) |
+| `SERVER_URL` | URL pública del backend |
+| `DATABASE_URL` | Cadena de conexión JDBC a SQL Server |
+| `DATABASE_USERNAME` | Usuario de la base de datos (`sa`) |
+| `DATABASE_PASSWORD` | Contraseña de la base de datos |
+| `DATABASE_DRIVER` | Driver JDBC (`com.microsoft.sqlserver.jdbc.SQLServerDriver`) |
+
+### SQL Server
+| Variable | Descripción |
+|----------|-------------|
+| `ACCEPT_EULA` | Aceptación de licencia (`Y`) |
+| `SA_PASSWORD` | Contraseña del usuario `sa` |
+
+---
+
+## 🐳 Imágenes Docker Hub
+
+| Servicio | Imagen |
+|----------|--------|
+| SQL Server | `cesia206/sql-server:2022` |
+| Backend Spring Boot | `cesia206/springboot-sqlserver:1.0` |
+| Frontend Angular | `cesia206/angular-frontend:1.0` |
+
+---
+
+## 🚀 Pasos de Despliegue
+
+### 1. Instalación de Docker en cada EC2
 
 ```bash
 sudo apt update
-```
-
-## Instalar Docker y Docker Compose
-
-```bash
 sudo apt install docker.io docker-compose-v2 -y
-```
-
-## Agregar permisos Docker al usuario
-
-```bash
 sudo usermod -aG docker ubuntu
-```
-
-## Salir y volver a ingresar
-
-```bash
 exit
-```
-
-## Verificar instalación
-
-```bash
+# Volver a conectarse por SSH
 docker --version
-```
-
-```bash
 docker compose version
 ```
 
 ---
 
-# 🗄️ 4. Despliegue de SQL Server (EC2 #1)
-
-## Crear carpeta del proyecto
+### 2. EC2 #1 — SQL Server
 
 ```bash
-mkdir sqlserver
-cd sqlserver
-```
-
-## Crear archivo docker-compose.yml
-
-```bash
+mkdir sqlserver && cd sqlserver
 nano docker-compose.yml
 ```
 
-## Contenido del docker-compose.yml
-
+**`docker-compose.yml`:**
 ```yaml
 version: '3'
-
 services:
   sqlserver:
     image: cesia206/sql-server:2022
     container_name: sqlserver
     restart: always
-
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "Arona@123!"
-
     ports:
       - "1433:1433"
-
     volumes:
       - sql_data:/var/opt/mssql
-
 volumes:
   sql_data:
 ```
 
-## Levantar SQL Server
-
 ```bash
 docker compose up -d
-```
-
-## Verificar contenedor
-
-```bash
 docker ps
-```
-
-## Ver logs si ocurre un error
-
-```bash
+# Si falla:
 docker logs sqlserver
 ```
 
 ---
 
-# ☕ 5. Backend Spring Boot
+### 3. EC2 #2 — Backend Spring Boot
 
-## Ruta del proyecto
-
-```text
-C:\Users\OneDrive\Desktop\ASE251S3_T06-be
-```
-
----
-
-# 📦 6. Dockerfile Backend
-
-## Archivo Dockerfile
+#### Dockerfile del Backend
 
 ```dockerfile
-# =========================
-# Etapa 1: Build Maven
-# =========================
+# Stage 1: Build with Maven
 FROM cesia206/maven:3.9-amazoncorretto-25-alpine AS builder
-
 WORKDIR /app
-
 COPY pom.xml .
 COPY src ./src
-
 RUN mvn clean package -DskipTests
 
-# =========================
-# Etapa 2: Ejecutar aplicación
-# =========================
+# Stage 2: Run with Java
 FROM cristhianyj/eclipse-temurin:25-jre-alpine
-
 WORKDIR /app
-
 COPY --from=builder /app/target/*.jar app.jar
-
 EXPOSE 8085
-
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
----
-
-# 🏗️ 7. Construcción de Imagen Backend
-
-## Construir imagen
+#### Construir y subir imagen
 
 ```bash
 docker build -t cesia206/springboot-sqlserver:1.0 .
-```
-
-## Verificar imágenes
-
-```bash
-docker images
-```
-
-## Login Docker Hub
-
-```bash
 docker login
-```
-
-## Subir imagen
-
-```bash
 docker push cesia206/springboot-sqlserver:1.0
 ```
 
----
-
-# ⚙️ 8. Configuración application.properties
-
-```properties
-spring.datasource.url=${DATABASE_URL}
-
-spring.datasource.username=${DATABASE_USERNAME}
-
-spring.datasource.password=${DATABASE_PASSWORD}
-
-spring.datasource.driver-class-name=${DATABASE_DRIVER}
-
-server.port=${PORT:8085}
-```
-
----
-
-# 🚀 9. Despliegue Backend en EC2 #2
-
-## Crear carpeta
+#### Desplegar en EC2 #2
 
 ```bash
-mkdir backend
-cd backend
-```
-
-## Crear docker-compose.yml
-
-```bash
+mkdir backend && cd backend
 nano docker-compose.yml
 ```
 
-## Contenido del docker-compose.yml
-
+**`docker-compose.yml`:**
 ```yaml
 version: '3'
-
 services:
-
   backend:
     image: cesia206/springboot-sqlserver:1.0
-
     container_name: springboot-sqlserver
-
     restart: always
-
     ports:
       - "8085:8085"
-
     environment:
       PORT: 8085
-
       SERVER_URL: http://IP_PUBLICA_BACKEND:8085
-
       DATABASE_URL: jdbc:sqlserver://IP_PUBLICA_SQL:1433;databaseName=aronadb;encrypt=true;trustServerCertificate=true
-
       DATABASE_USERNAME: sa
-
-      DATABASE_PASSWORD: "Arona@123!"
-
+      DATABASE_PASSWORD: Arona@123!
       DATABASE_DRIVER: com.microsoft.sqlserver.jdbc.SQLServerDriver
 ```
 
-## Descargar imagen
-
 ```bash
 docker pull cesia206/springboot-sqlserver:1.0
-```
-
-## Levantar backend
-
-```bash
 docker compose up -d
-```
-
-## Verificar contenedor
-
-```bash
 docker ps
-```
-
-## Ver logs
-
-```bash
 docker logs -f springboot-sqlserver
 ```
 
 ---
 
-# 🅰️ 10. Frontend Angular
+### 4. EC2 #3 — Frontend Angular
 
-## Ruta del proyecto
-
-```text
-C:\Users\OneDrive\Desktop\ASE251S3_T06-fe
-```
-
----
-
-# 🌍 11. Configuración de environment.ts
-
-## environment.ts
+#### Configuración `environment.ts`
 
 ```typescript
 export const environment = {
@@ -336,54 +247,26 @@ export const environment = {
 };
 ```
 
-## environment.prod.ts
-
-```typescript
-export const environment = {
-  production: true,
-  apiUrl: 'http://IP_PUBLICA_BACKEND:8085/api'
-};
-```
-
----
-
-# 🐳 12. Dockerfile Frontend Angular
-
-## Archivo Dockerfile
+#### Dockerfile del Frontend
 
 ```dockerfile
-# =========================
 # Etapa 1: Build Angular
-# =========================
 FROM node:20 AS build
-
 WORKDIR /app
-
 COPY package*.json ./
-
 RUN npm install --legacy-peer-deps
-
 COPY . .
-
 RUN npm run build
 
-# =========================
 # Etapa 2: NGINX
-# =========================
 FROM nginx:alpine
-
 COPY --from=build /app/dist/arona-agricola/browser /usr/share/nginx/html
-
 EXPOSE 80
 ```
 
----
+#### `.dockerignore`
 
-# 🚫 13. Archivo .dockerignore
-
-## Crear archivo .dockerignore
-
-```text
+```
 node_modules
 dist
 .angular
@@ -391,133 +274,72 @@ dist
 .vscode
 ```
 
----
-
-# 🏗️ 14. Construcción de Imagen Frontend
-
-## Generar build Angular
+#### Construir y subir imagen
 
 ```bash
 npm run build
-```
-
-## Construir imagen Docker
-
-```bash
 docker build -t cesia206/angular-frontend:1.0 .
-```
-
-## Verificar imágenes
-
-```bash
 docker images
-```
-
-## Subir imagen Docker Hub
-
-```bash
 docker push cesia206/angular-frontend:1.0
 ```
 
----
-
-# 🌐 15. Despliegue Frontend en EC2 #3
-
-## Crear carpeta
+#### Desplegar en EC2 #3
 
 ```bash
-mkdir frontend
-cd frontend
-```
-
-## Crear docker-compose.yml
-
-```bash
+mkdir frontend && cd frontend
 nano docker-compose.yml
 ```
 
-## Contenido del docker-compose.yml
-
+**`docker-compose.yml`:**
 ```yaml
 version: '3'
-
 services:
-
   frontend:
     image: cesia206/angular-frontend:1.0
-
     container_name: angular-frontend
-
     restart: always
-
     ports:
       - "80:80"
 ```
 
-## Descargar imagen
-
 ```bash
 docker pull cesia206/angular-frontend:1.0
-```
-
-## Levantar frontend
-
-```bash
 docker compose up -d
-```
-
-## Verificar contenedor
-
-```bash
 docker ps
 ```
 
 ---
 
-# ✅ 16. Verificación Final
+## 📸 Evidencia de Funcionamiento
 
-## Backend
+### Backend — Swagger UI
+![Backend Swagger](evidencias/backend-swagger.png)
 
-```text
-http://IP_PUBLICA_BACKEND:8085
-```
+> API accesible en `http://IP_PUBLICA_BACKEND:8085/swagger-ui/index.html`
 
-## Swagger
+### Frontend — Login
+![Frontend Login](evidencias/frontend-login.png)
 
-```text
-http://IP_PUBLICA_BACKEND:8085/swagger-ui/index.html
-```
+> Aplicación accesible en `http://IP_PUBLICA_FRONTEND`
 
-## Frontend
+### Dashboard Principal
+![Dashboard](evidencias/dashboard.png)
 
-```text
-http://IP_PUBLICA_FRONTEND
-```
+> Panel en tiempo real con producción, campos, alertas y usuarios activos.
 
----
-
-# 🐋 17. Docker Hub
-
-## Imágenes utilizadas
-
-| Imagen              | Nombre                            |
-| ------------------- | --------------------------------- |
-| Backend Spring Boot | cesia206/springboot-sqlserver:1.0 |
-| Frontend Angular    | cesia206/angular-frontend:1.0     |
-| SQL Server          | cesia206/sql-server:2022          |
+### Docker Hub — Imágenes
+![Docker Hub](evidencias/dockerhub.png)
 
 ---
 
-# 🎯 19. Resultado Final
+## ✅ Resultado Final
 
-El sistema fue desplegado exitosamente utilizando:
+El sistema fue desplegado exitosamente con:
 
-* Docker
-* Docker Compose
-* AWS EC2
-* Angular
-* Spring Boot
-* SQL Server
-* Docker Hub
-
-La arquitectura final quedó distribuida en 3 servidores independientes conectados mediante IPs públicas de AWS, permitiendo la comunicación entre frontend, backend y base de datos de manera correcta.
+- ✅ Docker + Docker Compose en 3 instancias EC2
+- ✅ SQL Server 2022 corriendo en contenedor con volumen persistente
+- ✅ Spring Boot API REST documentada con Swagger
+- ✅ Frontend Angular servido con NGINX
+- ✅ Imágenes publicadas en Docker Hub
+- ✅ Comunicación entre servicios mediante Elastic IPs de AWS
+- ✅ Arquitectura distribuida en 3 servidores independientes
