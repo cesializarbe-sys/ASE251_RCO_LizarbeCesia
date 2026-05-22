@@ -9,8 +9,8 @@
 | Nombre |
 |--------|
 | Cesia Lizarbe Mesajil |
-| Cristhian Yaranga |
-| Juliany Shawn Manrique Rojas |
+| Cristhian Yaranga Julian |
+| Shawn Manrique Rojas |
 
 ---
 
