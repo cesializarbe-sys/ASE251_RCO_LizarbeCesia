@@ -1,0 +1,197 @@
+<div class="space-y-6 animate-fade-in">
+  <!-- Welcome Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-bold text-gray-800">Bienvenido, {{ authService.userName() }}</h1>
+        <span class="badge badge-success text-xs">{{ authService.userRole() === 'ADMINISTRADOR' ? 'Administrador' : 'Encargado' }}</span>
+      </div>
+      <p class="text-sm text-gray-500 mt-1">Ciclo Agrícola 2025/26 · Panel en tiempo real</p>
+    </div>
+  </div>
+
+  <!-- Error de conexión -->
+  @if (dashboardService.errorMessage()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-fade-in">
+      <span class="material-icons-outlined text-red-500 text-2xl">cloud_off</span>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-red-700">Error de conexión</p>
+        <p class="text-xs text-red-600 mt-0.5">{{ dashboardService.errorMessage() }}</p>
+      </div>
+      <button (click)="dashboardService.loadData()"
+        class="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all border-none cursor-pointer flex items-center gap-1">
+        <span class="material-icons-outlined text-sm">refresh</span> Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- KPI Cards Row -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Producción -->
+    <div class="arona-card p-5 group cursor-default">
+      <div class="flex items-start justify-between">
+        <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+          <span class="material-icons-outlined text-green-600">bar_chart</span>
+        </div>
+        <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">{{ dashboardService.lotesCosechados() }} cosechas</span>
+      </div>
+      <p class="text-3xl font-bold text-gray-800 mt-3">{{ dashboardService.totalProducido() }} <span class="text-sm font-normal text-gray-400">TN</span></p>
+      <p class="text-xs text-gray-500 mt-1">Producción Total</p>
+    </div>
+
+    <!-- Campos -->
+    <div class="arona-card p-5 group cursor-default">
+      <div class="flex items-start justify-between">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+          <span class="material-icons-outlined text-blue-600">landscape</span>
+        </div>
+        <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Activos</span>
+      </div>
+      <p class="text-3xl font-bold text-gray-800 mt-3">{{ dashboardService.totalLotes() }}</p>
+      <p class="text-xs text-gray-500 mt-1">Campos Registrados</p>
+    </div>
+
+    <!-- Alertas — dato real -->
+    <div class="arona-card p-5 group cursor-default">
+      <div class="flex items-start justify-between">
+        <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+          <span class="material-icons-outlined text-orange-600">warning_amber</span>
+        </div>
+        @if (dashboardService.alertasPendientesCount() > 0) {
+          <span class="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">Pendientes</span>
+        } @else {
+          <span class="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Todo OK</span>
+        }
+      </div>
+      <p class="text-3xl font-bold text-gray-800 mt-3">{{ dashboardService.alertasPendientesCount() }}</p>
+      <p class="text-xs text-gray-500 mt-1">Alertas Pendientes</p>
+    </div>
+
+    <!-- Usuarios — dato real -->
+    <div class="arona-card p-5 group cursor-default">
+      <div class="flex items-start justify-between">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+          <span class="material-icons-outlined text-purple-600">groups</span>
+        </div>
+        <span class="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">Activos</span>
+      </div>
+      <p class="text-3xl font-bold text-gray-800 mt-3">{{ dashboardService.totalUsuarios() }}</p>
+      <p class="text-xs text-gray-500 mt-1">Usuarios del Sistema</p>
+    </div>
+  </div>
+
+  <!-- Quick Access + Alerts Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Quick Access -->
+    <div class="arona-card p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Acceso Rápido</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <a routerLink="/produccion" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-green-500 to-green-600 text-white hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer no-underline">
+          <span class="material-icons-outlined text-3xl">bar_chart</span>
+          <span class="text-sm font-medium">Ver Producción</span>
+        </a>
+        <a routerLink="/mis-campos" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer no-underline">
+          <span class="material-icons-outlined text-3xl">landscape</span>
+          <span class="text-sm font-medium">Mis Campos</span>
+        </a>
+        <a routerLink="/enfermedades" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 text-white hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer no-underline">
+          <span class="material-icons-outlined text-3xl">bug_report</span>
+          <span class="text-sm font-medium">Enfermedades</span>
+        </a>
+        <a routerLink="/calidad" class="flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 text-white hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer no-underline">
+          <span class="material-icons-outlined text-3xl">verified</span>
+          <span class="text-sm font-medium">Calidad</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Alertas del Sistema — datos reales -->
+    <div class="arona-card p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Alertas del Sistema</h2>
+      <div class="space-y-3">
+        @for (alerta of dashboardService.alertasPendientes().slice(0, 4); track alerta.idAlerta) {
+          <div class="flex items-start gap-3 p-3 rounded-xl border transition-colors"
+               [class]="alerta.tipoProblema === 'PLAGA' ? 'bg-red-50 border-red-100' : alerta.tipoProblema === 'ENFERMEDAD' ? 'bg-orange-50 border-orange-100' : 'bg-yellow-50 border-yellow-100'">
+            <span class="material-icons-outlined mt-0.5"
+                  [class]="alerta.tipoProblema === 'PLAGA' ? 'text-red-500' : alerta.tipoProblema === 'ENFERMEDAD' ? 'text-orange-500' : 'text-yellow-600'">
+              {{ alerta.tipoProblema === 'PLAGA' ? 'bug_report' : alerta.tipoProblema === 'ENFERMEDAD' ? 'local_pharmacy' : 'warning_amber' }}
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-800">{{ alerta.campo?.nombre ?? 'Campo' }} — {{ alerta.tipoProblema }}</p>
+              <p class="text-xs text-gray-500 truncate">{{ alerta.descripcionProblema }}</p>
+              <p class="text-[10px] text-gray-400 mt-0.5">📅 {{ alerta.fechaDeteccion }}</p>
+            </div>
+          </div>
+        }
+        @if (dashboardService.alertasPendientesCount() === 0) {
+          <div class="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
+            <span class="material-icons-outlined text-green-600">check_circle</span>
+            <div>
+              <p class="text-sm font-semibold text-gray-800">Sin alertas pendientes</p>
+              <p class="text-xs text-gray-500">Todos los campos están en buen estado.</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Activities + Field Conditions -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Activities — datos reales -->
+    <div class="arona-card p-6">
+      <h2 class="text-lg font-semibold text-gray-800 mb-4">Últimas Actividades</h2>
+      <div class="space-y-4">
+        @for (act of dashboardService.ultimasActividades(); track act.idActividad) {
+          <div class="flex items-start gap-3">
+            <div class="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0" [class]="getActColor(act.tipoActividad)"></div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800">{{ act.tipoActividad }} — Campo #{{ act.idCampo }}</p>
+              @if (act.observaciones) {
+                <p class="text-xs text-gray-500 truncate">{{ act.observaciones }}</p>
+              }
+              <p class="text-xs text-gray-400">{{ formatFecha(act.fecha) }}</p>
+            </div>
+          </div>
+        }
+        @if (dashboardService.ultimasActividades().length === 0) {
+          <div class="text-center py-4">
+            <span class="material-icons-outlined text-3xl text-gray-300">assignment</span>
+            <p class="text-xs text-gray-400 mt-1">Sin actividades recientes</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Field Conditions -->
+    <div class="rounded-xl overflow-hidden shadow-lg">
+      <div class="bg-gradient-to-br from-green-600 to-green-800 p-6 text-white">
+        <h2 class="text-lg font-semibold mb-4">Condiciones del Campo</h2>
+        <div class="grid grid-cols-2 gap-6 mb-4">
+          <div class="flex items-center gap-3">
+            <span class="material-icons-outlined text-3xl text-yellow-300">wb_sunny</span>
+            <div>
+              <p class="text-3xl font-bold">24°C</p>
+              <p class="text-sm text-green-200">Temperatura</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="material-icons-outlined text-3xl text-blue-300">water_drop</span>
+            <div>
+              <p class="text-3xl font-bold">68%</p>
+              <p class="text-sm text-green-200">Humedad</p>
+            </div>
+          </div>
+        </div>
+        <div class="border-t border-white/20 pt-3 mt-2">
+          <p class="text-sm text-green-100">Zona: Lote 2 - Ica, Perú</p>
+          <p class="text-sm text-green-200">Soleado · Viento 12 km/h</p>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="material-icons-outlined text-green-300 text-lg">trending_up</span>
+            <p class="text-sm font-semibold text-green-100">Rendimiento promedio: {{ dashboardService.rendimientoPromedio() }} tn/ha</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   ARONA DESIGN SYSTEM
+   ============================================ */
+
+:root {
+  --color-arona-500: #00843D;
+  --color-arona-600: #00753A;
+  --color-arona-700: #005C2E;
+  --color-arona-800: #004422;
+  --color-arona-50: #E8F5E9;
+  --color-arona-100: #C8E6C9;
+  --color-arona-200: #A5D6A7;
+  --color-surface: #F8FAF9;
+  --color-surface-card: #FFFFFF;
+  --color-text-primary: #1A1A1A;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-accent-orange: #F57C00;
+  --color-accent-red: #D32F2F;
+  --color-accent-blue: #1565C0;
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ============================================
+   ANGULAR MATERIAL OVERRIDES
+   ============================================ */
+
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 12px !important;
+}
+
+.mat-mdc-table {
+  background: transparent !important;
+}
+
+.mat-mdc-header-cell {
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--color-text-secondary) !important;
+}
+
+.mat-mdc-cell {
+  font-size: 14px !important;
+  color: var(--color-text-primary) !important;
+}
+
+.mat-mdc-row:hover {
+  background-color: var(--color-arona-50) !important;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-flat-button.mat-primary {
+  --mdc-filled-button-container-color: var(--color-arona-500) !important;
+  --mdc-filled-button-container-shape: 12px !important;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.arona-card {
+  background: var(--color-surface-card);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  border: 1px solid var(--color-border-light);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.arona-card:hover {
+  box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.arona-btn-primary {
+  background-color: var(--color-arona-500);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arona-btn-primary:hover {
+  background-color: var(--color-arona-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,132,61,0.3);
+}
+
+.arona-btn-outline {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 24px;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arona-btn-outline:hover {
+  border-color: var(--color-arona-500);
+  color: var(--color-arona-500);
+  background-color: var(--color-arona-50);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-success { background-color: #DCFCE7; color: #166534; }
+.badge-warning { background-color: #FEF3C7; color: #92400E; }
+.badge-danger { background-color: #FEE2E2; color: #991B1B; }
+.badge-info { background-color: #DBEAFE; color: #1E40AF; }
+.badge-neutral { background-color: #F3F4F6; color: #4B5563; }
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+.animate-scale-in { animation: scaleIn 0.2s ease forwards; }

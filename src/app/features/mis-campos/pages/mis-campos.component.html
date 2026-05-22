@@ -1,0 +1,235 @@
+<div class="space-y-6 animate-fade-in">
+  <!-- Header -->
+  <div class="flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Mis Campos</h1>
+      <p class="text-sm text-gray-500 mt-1">Gestión de lotes y parcelas</p>
+    </div>
+    <button class="arona-btn-primary" (click)="openNewCampo()">
+      <span class="text-lg">+</span> Nuevo Campo
+    </button>
+  </div>
+
+  <!-- Error de conexión -->
+  @if (camposService.errorMessage()) {
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3 animate-fade-in">
+      <span class="material-icons-outlined text-red-500 text-2xl">cloud_off</span>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-red-700">Error de conexión</p>
+        <p class="text-xs text-red-600 mt-0.5">{{ camposService.errorMessage() }}</p>
+      </div>
+      <button (click)="camposService.loadCampos()"
+        class="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-all border-none cursor-pointer flex items-center gap-1">
+        <span class="material-icons-outlined text-sm">refresh</span> Reintentar
+      </button>
+    </div>
+  }
+
+  <!-- Summary KPIs -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="arona-card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-icons-outlined text-green-600">landscape</span>
+        <p class="text-sm text-gray-600 font-medium">Total Campos</p>
+      </div>
+      <p class="text-3xl font-bold text-gray-800">{{ camposService.campos().length }}</p>
+      <p class="text-xs text-gray-400 mt-1">lotes registrados</p>
+    </div>
+    <div class="arona-card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-icons-outlined text-blue-600">straighten</span>
+        <p class="text-sm text-gray-600 font-medium">Total Hectáreas</p>
+      </div>
+      <p class="text-3xl font-bold text-gray-800">{{ camposService.totalHectareas() }}<span class="text-sm font-normal text-gray-400">ha</span></p>
+      <p class="text-xs text-gray-400 mt-1">superficie total</p>
+    </div>
+    <div class="arona-card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-icons-outlined text-green-500">check_circle</span>
+        <p class="text-sm text-gray-600 font-medium">Activos</p>
+      </div>
+      <p class="text-3xl font-bold text-gray-800">{{ camposService.campos().filter(c => c.estado).length }}</p>
+      <p class="text-xs text-gray-400 mt-1">campos activos</p>
+    </div>
+    <div class="arona-card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-icons-outlined text-gray-400">block</span>
+        <p class="text-sm text-gray-600 font-medium">Inactivos</p>
+      </div>
+      <p class="text-3xl font-bold text-gray-800">{{ camposService.campos().filter(c => !c.estado).length }}</p>
+      <p class="text-xs text-gray-400 mt-1">campos inactivos</p>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-3">
+    <div class="relative flex-1 max-w-xs">
+      <span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+      <input type="text" placeholder="Buscar campo o responsable..." (input)="onSearch($event)"
+        class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all" />
+    </div>
+    <div class="flex bg-gray-100 rounded-lg p-1 ml-auto">
+      <button (click)="viewMode = 'grid'" class="p-1.5 rounded-md transition-all border-none cursor-pointer"
+        [class]="viewMode === 'grid' ? 'bg-white shadow-sm text-green-600' : 'bg-transparent text-gray-400'">
+        <span class="material-icons-outlined text-lg">grid_view</span>
+      </button>
+      <button (click)="viewMode = 'list'" class="p-1.5 rounded-md transition-all border-none cursor-pointer"
+        [class]="viewMode === 'list' ? 'bg-white shadow-sm text-green-600' : 'bg-transparent text-gray-400'">
+        <span class="material-icons-outlined text-lg">view_list</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Cards Grid -->
+  @if (viewMode === 'grid') {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      @for (campo of camposService.filteredCampos(); track campo.idCampo; let i = $index) {
+        <div class="arona-card overflow-hidden hover:shadow-lg transition-all duration-200"
+             [class]="campo.estado ? 'border-t-4 border-t-green-500' : 'border-t-4 border-t-gray-300 opacity-75'"
+             [style.animation-delay]="i * 50 + 'ms'"
+             style="animation: fadeIn 0.3s ease forwards; opacity: 0;">
+          <div class="p-5 pb-3">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <h3 class="text-base font-bold text-gray-800">{{ campo.nombre }}</h3>
+                <p class="text-xs text-gray-400">{{ campo.idCampo ? 'ID-' + campo.idCampo : '' }}</p>
+              </div>
+              <span class="badge text-xs" [class]="getEstadoClass(campo)">{{ getEstado(campo) }}</span>
+            </div>
+            @if (campo.responsable) {
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                <span class="material-icons-outlined text-xs" style="font-size:12px">person</span> {{ campo.responsable }}
+              </span>
+            }
+            <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+              <span class="flex items-center gap-1"><span class="material-icons-outlined text-sm">location_on</span> {{ campo.ubicacion ?? 'Sin ubicación' }}</span>
+              <span class="flex items-center gap-1"><span class="material-icons-outlined text-sm">straighten</span> {{ campo.hectareas }} ha</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50/50">
+            <div class="flex items-center gap-2">
+              <button class="text-xs text-gray-600 font-medium hover:text-green-600 transition-colors bg-transparent border border-gray-200 rounded-lg px-4 py-1.5 cursor-pointer hover:border-green-500"
+                (click)="viewDetail(campo)">Ver detalle</button>
+              <!-- Toggle Estado -->
+              <button (click)="toggleEstado(campo)"
+                class="w-10 h-5 rounded-full relative border-none transition-all cursor-pointer"
+                [class]="campo.estado ? 'bg-green-500' : 'bg-gray-300'"
+                [title]="campo.estado ? 'Desactivar campo' : 'Activar campo'">
+                <div class="w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow-sm"
+                  [class]="campo.estado ? 'left-5' : 'left-0.5'"></div>
+              </button>
+            </div>
+            <div class="flex items-center gap-1">
+              <button (click)="editCampo(campo)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 transition-all border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">edit</span></button>
+              <button (click)="deleteCampo(campo)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">delete</span></button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- List View -->
+    <div class="arona-card overflow-hidden">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-gray-200 bg-gray-50/50">
+          <th class="text-left py-3 px-4 text-xs font-semibold uppercase text-gray-500">Campo</th>
+          <th class="text-left py-3 px-4 text-xs font-semibold uppercase text-gray-500">Responsable</th>
+          <th class="text-left py-3 px-4 text-xs font-semibold uppercase text-gray-500">Ubicación</th>
+          <th class="text-left py-3 px-4 text-xs font-semibold uppercase text-gray-500">Hectáreas</th>
+          <th class="text-left py-3 px-4 text-xs font-semibold uppercase text-gray-500">Estado</th>
+          <th class="text-left py-3 px-4 text-xs font-semibold uppercase text-gray-500">Acciones</th>
+        </tr></thead>
+        <tbody>
+          @for (campo of camposService.filteredCampos(); track campo.idCampo) {
+            <tr class="border-b border-gray-100 hover:bg-green-50/30 transition-colors" [class.opacity-60]="!campo.estado">
+              <td class="py-3 px-4"><div class="flex items-center gap-2"><span class="material-icons-outlined text-green-500">landscape</span><span class="font-semibold text-gray-800">{{ campo.nombre }}</span></div></td>
+              <td class="py-3 px-4 text-gray-500">{{ campo.responsable ?? '—' }}</td>
+              <td class="py-3 px-4 text-gray-500">{{ campo.ubicacion ?? '—' }}</td>
+              <td class="py-3 px-4 font-semibold text-gray-700">{{ campo.hectareas }} ha</td>
+              <td class="py-3 px-4">
+                <button (click)="toggleEstado(campo)"
+                  class="w-10 h-5 rounded-full relative border-none transition-all cursor-pointer"
+                  [class]="campo.estado ? 'bg-green-500' : 'bg-gray-300'">
+                  <div class="w-4 h-4 bg-white rounded-full absolute top-0.5 transition-all shadow-sm" [class]="campo.estado ? 'left-5' : 'left-0.5'"></div>
+                </button>
+              </td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-1">
+                  <button (click)="viewDetail(campo)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">visibility</span></button>
+                  <button (click)="editCampo(campo)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">edit</span></button>
+                  <button (click)="deleteCampo(campo)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">delete</span></button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  @if (camposService.filteredCampos().length === 0) {
+    <div class="text-center py-16">
+      <span class="material-icons-outlined text-6xl text-gray-300">landscape</span>
+      <p class="text-lg font-medium text-gray-500 mt-4">No se encontraron campos</p>
+      <p class="text-sm text-gray-400">Intente con otro filtro o agregue un nuevo campo</p>
+      <button class="arona-btn-primary mt-4" (click)="openNewCampo()"><span class="text-lg">+</span> Crear Primer Campo</button>
+    </div>
+  }
+</div>
+
+<!-- Detail Panel Modal -->
+@if (showDetail() && selectedCampo()) {
+  <div class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" (click)="closeDetail()">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-scale-in" (click)="$event.stopPropagation()">
+      <div class="h-28 bg-gradient-to-r from-green-500 to-green-600 relative">
+        <button (click)="closeDetail()" class="absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined">close</span></button>
+        <div class="absolute bottom-4 left-6">
+          <h2 class="text-xl font-bold text-white">{{ selectedCampo()!.nombre }}</h2>
+          <p class="text-sm text-white/80">ID-{{ selectedCampo()!.idCampo }}</p>
+        </div>
+        <div class="absolute bottom-4 right-6 text-4xl">🌱</div>
+      </div>
+      <div class="p-6 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="badge text-xs" [class]="getEstadoClass(selectedCampo()!)">{{ getEstado(selectedCampo()!) }}</span>
+          @if (selectedCampo()!.sistemaRiego) {
+            <span class="badge badge-neutral text-xs">{{ selectedCampo()!.sistemaRiego }}</span>
+          }
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <p class="text-xs text-gray-400 uppercase font-semibold">Ubicación</p>
+            <p class="text-sm font-medium text-gray-800 mt-1">{{ selectedCampo()!.ubicacion ?? 'Sin especificar' }}</p>
+          </div>
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <p class="text-xs text-gray-400 uppercase font-semibold">Extensión</p>
+            <p class="text-sm font-medium text-gray-800 mt-1">{{ selectedCampo()!.hectareas }} ha</p>
+          </div>
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <p class="text-xs text-gray-400 uppercase font-semibold">Responsable</p>
+            <p class="text-sm font-medium text-gray-800 mt-1">{{ selectedCampo()!.responsable ?? '—' }}</p>
+          </div>
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <p class="text-xs text-gray-400 uppercase font-semibold">Sistema de Riego</p>
+            <p class="text-sm font-medium text-gray-800 mt-1">{{ selectedCampo()!.sistemaRiego ?? '—' }}</p>
+          </div>
+        </div>
+        @if (selectedCampo()!.observaciones) {
+          <div class="p-3 bg-gray-50 rounded-lg">
+            <p class="text-xs text-gray-400 uppercase font-semibold">Observaciones</p>
+            <p class="text-sm text-gray-700 mt-1">{{ selectedCampo()!.observaciones }}</p>
+          </div>
+        }
+        <div class="flex gap-3 pt-2">
+          <button (click)="closeDetail(); editCampo(selectedCampo()!)" class="arona-btn-outline flex-1 justify-center"><span class="material-icons-outlined text-lg">edit</span> Editar</button>
+          <button (click)="toggleEstado(selectedCampo()!)"
+            class="flex-1 rounded-xl py-2.5 font-semibold cursor-pointer transition-all flex items-center justify-center gap-2"
+            [class]="selectedCampo()!.estado ? 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100' : 'bg-green-50 text-green-600 border border-green-200 hover:bg-green-100'">
+            <span class="material-icons-outlined text-lg">{{ selectedCampo()!.estado ? 'visibility_off' : 'visibility' }}</span>
+            {{ selectedCampo()!.estado ? 'Desactivar' : 'Activar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,129 @@
+<div class="space-y-6 animate-fade-in">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-800">Mis Datos</h1>
+    <p class="text-sm text-gray-500 mt-1">Información personal y laboral</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Profile Card -->
+    <div class="arona-card overflow-hidden">
+      <div class="h-28 bg-gradient-to-br from-green-600 to-green-800 relative">
+        <div class="absolute -bottom-10 left-6">
+          <div class="w-20 h-20 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center">
+            <span class="text-2xl font-bold text-green-600">{{ getInitials() }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="pt-14 px-6 pb-6">
+        <div class="flex items-start justify-between">
+          <div>
+            <h2 class="text-lg font-bold text-gray-800">{{ auth.userName() }}</h2>
+            <p class="text-sm text-gray-500">{{ rolLabel() }}</p>
+          </div>
+          <span class="badge text-xs" [class]="rolBadgeClass()">{{ auth.userRole() }}</span>
+        </div>
+
+        <div class="space-y-2 mt-4 text-sm">
+          @if (auth.currentUser()?.dni) {
+            <div class="flex justify-between py-1.5 border-b border-gray-100">
+              <span class="text-gray-500 text-xs uppercase">DNI</span>
+              <span class="text-gray-800 font-medium">{{ auth.currentUser()?.dni }}</span>
+            </div>
+          }
+          @if (auth.currentUser()?.telefono) {
+            <div class="flex justify-between py-1.5 border-b border-gray-100">
+              <span class="text-gray-500 text-xs uppercase">Teléfono</span>
+              <span class="text-gray-800 font-medium">{{ auth.currentUser()?.telefono }}</span>
+            </div>
+          }
+          <div class="flex justify-between py-1.5">
+            <span class="text-gray-500 text-xs uppercase">Área</span>
+            <span class="text-gray-800 font-medium">{{ auth.currentUser()?.area ?? '—' }}</span>
+          </div>
+        </div>
+
+        <button class="arona-btn-primary w-full mt-4 justify-center">
+          <span class="material-icons-outlined text-lg">badge</span> Descargar Carnet
+        </button>
+      </div>
+    </div>
+
+    <!-- Details -->
+    <div class="lg:col-span-2 arona-card p-6">
+      <div class="flex border-b border-gray-200 mb-6">
+        @for (tab of tabs; track tab) {
+          <button (click)="activeTab.set(tab)"
+            class="px-4 py-2.5 text-sm font-medium border-b-2 -mb-px cursor-pointer bg-transparent border-t-0 border-l-0 border-r-0 transition-all"
+            [class]="activeTab() === tab ? 'text-green-600 border-green-600' : 'text-gray-500 border-transparent hover:text-gray-700'">
+            {{ tab }}
+          </button>
+        }
+      </div>
+
+      @if (activeTab() === 'Información Personal') {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Nombre Completo</label>
+            <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+              <span class="material-icons-outlined text-gray-400 text-lg">person</span> {{ auth.userName() }}
+            </p>
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Correo Electrónico</label>
+            <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+              <span class="material-icons-outlined text-gray-400 text-lg">email</span>
+              {{ auth.currentUser()?.correo ?? '—' }}
+            </p>
+          </div>
+          @if (auth.currentUser()?.dni) {
+            <div>
+              <label class="text-xs font-semibold uppercase text-gray-500">DNI</label>
+              <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+                <span class="material-icons-outlined text-gray-400 text-lg">badge</span>
+                {{ auth.currentUser()?.dni }}
+              </p>
+            </div>
+          }
+          @if (auth.currentUser()?.telefono) {
+            <div>
+              <label class="text-xs font-semibold uppercase text-gray-500">Teléfono</label>
+              <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+                <span class="material-icons-outlined text-gray-400 text-lg">phone</span>
+                {{ auth.currentUser()?.telefono }}
+              </p>
+            </div>
+          }
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Rol</label>
+            <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+              <span class="material-icons-outlined text-gray-400 text-lg">work</span>
+              {{ rolLabel() }}
+              <span class="badge text-xs" [class]="rolBadgeClass()">{{ auth.userRole() }}</span>
+            </p>
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Área</label>
+            <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+              <span class="material-icons-outlined text-gray-400 text-lg">domain</span>
+              {{ auth.currentUser()?.area ?? 'No asignada' }}
+            </p>
+          </div>
+          @if (auth.currentUser()?.direccion) {
+            <div>
+              <label class="text-xs font-semibold uppercase text-gray-500">Dirección</label>
+              <p class="text-sm text-gray-800 mt-1 flex items-center gap-2">
+                <span class="material-icons-outlined text-gray-400 text-lg">location_on</span>
+                {{ auth.currentUser()?.direccion }}
+              </p>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="text-center py-12">
+          <span class="material-icons-outlined text-5xl text-gray-300">workspace_premium</span>
+          <p class="text-gray-500 mt-3">Sin registros de certificaciones</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

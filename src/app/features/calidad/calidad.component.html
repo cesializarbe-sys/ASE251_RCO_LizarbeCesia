@@ -1,0 +1,158 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-start justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Control de Calidad</p>
+      <h1 class="text-2xl font-bold text-gray-800">Revisiones de Calidad</h1>
+      <p class="text-sm text-gray-500 mt-1">HU6: Revisión de calidad antes del despacho</p>
+    </div>
+    <div class="flex items-center gap-3">
+      @if (notificacionesPendientes() > 0) {
+        <div class="relative">
+          <span class="material-icons-outlined text-orange-500 text-2xl">notifications_active</span>
+          <span class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">{{ notificacionesPendientes() }}</span>
+        </div>
+      }
+      <button class="arona-btn-primary" (click)="openCreate()"><span class="text-lg">+</span> Nueva Revisión</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="arona-card p-5">
+      <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-3"><span class="material-icons-outlined text-green-600">verified</span></div>
+      <p class="text-3xl font-bold text-gray-800">{{ aprobadas() }}</p><p class="text-xs text-gray-500 mt-1">Aprobadas</p>
+    </div>
+    <div class="arona-card p-5">
+      <div class="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center mb-3"><span class="material-icons-outlined text-red-500">cancel</span></div>
+      <p class="text-3xl font-bold text-gray-800">{{ rechazadas() }}</p><p class="text-xs text-gray-500 mt-1">Rechazadas</p>
+    </div>
+    <div class="arona-card p-5">
+      <div class="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center mb-3"><span class="material-icons-outlined text-yellow-600">pending</span></div>
+      <p class="text-3xl font-bold text-gray-800">{{ revisiones().length }}</p><p class="text-xs text-gray-500 mt-1">Total Revisiones</p>
+    </div>
+    <div class="arona-card p-5">
+      <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center mb-3"><span class="material-icons-outlined text-blue-600">percent</span></div>
+      <p class="text-3xl font-bold text-gray-800">{{ tasa() }}%</p><p class="text-xs text-gray-500 mt-1">Tasa Aprobación</p>
+    </div>
+  </div>
+
+  <div class="arona-card p-6">
+    <h2 class="text-lg font-semibold text-gray-800 mb-4">Revisiones Recientes</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-gray-200">
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">ID</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Cosecha</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Fecha Rev.</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Supervisor</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Resultado</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Estado</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Notif.</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Observaciones</th>
+          <th class="text-left py-3 px-3 text-xs font-semibold uppercase text-gray-500">Acciones</th>
+        </tr></thead>
+        <tbody>
+          @for (rev of revisiones(); track rev.idRevision) {
+            <tr class="border-b border-gray-100 hover:bg-green-50/30 transition-colors" [class.opacity-50]="rev.estado === false">
+              <td class="py-3 px-3 font-semibold text-gray-800">#{{ rev.idRevision }}</td>
+              <td class="py-3 px-3 text-gray-600">{{ getCosechaLabel(rev.cosecha) }}</td>
+              <td class="py-3 px-3 text-gray-600">{{ rev.fecha }}</td>
+              <td class="py-3 px-3 text-gray-600">{{ rev.supervisor?.nombreCompleto || '—' }}</td>
+              <td class="py-3 px-3"><span class="badge" [class]="rev.cumpleRequisitos ? 'badge-success' : 'badge-danger'">{{ rev.cumpleRequisitos ? 'APROBADO' : 'RECHAZADO' }}</span></td>
+              <td class="py-3 px-3"><span class="badge" [class]="getEstadoClass(rev)">{{ getEstadoLabel(rev) }}</span></td>
+              <td class="py-3 px-3 text-center">
+                @if (rev.notificado) {
+                  <span class="material-icons-outlined text-orange-500 text-lg" title="Notificado al encargado">notifications_active</span>
+                } @else {
+                  <span class="text-gray-300">—</span>
+                }
+              </td>
+              <td class="py-3 px-3 text-gray-500 text-xs max-w-xs truncate">{{ rev.observaciones }}</td>
+              <td class="py-3 px-3">
+                <div class="flex items-center gap-1">
+                  @if (rev.estado !== false) {
+                    <button (click)="openEdit(rev)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">edit</span></button>
+                    <button (click)="confirmDelete(rev)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">delete</span></button>
+                  } @else {
+                    <button (click)="restoreRevision(rev)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 border-none bg-transparent cursor-pointer" title="Restaurar"><span class="material-icons-outlined text-lg">restore</span></button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+          @if (revisiones().length === 0) {
+            <tr><td colspan="9" class="py-8 text-center text-gray-400">No hay revisiones registradas</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" (click)="showModal.set(false)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 animate-scale-in" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800">{{ editingItem() ? 'Editar Revisión' : 'Nueva Revisión de Calidad' }}</h2>
+        <button (click)="showModal.set(false)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined">close</span></button>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Cosecha *</label>
+            <select [(ngModel)]="form.idCosechaSelected" class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500">
+              <option [ngValue]="undefined">Seleccionar cosecha</option>
+              @for (c of cosechas(); track c.idCosecha) {
+                <option [ngValue]="c.idCosecha">{{ c.tipoCultivo }} · {{ c.campo?.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Supervisor *</label>
+            <select [(ngModel)]="form.idSupervisorSelected" class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20">
+              <option [ngValue]="undefined">Seleccionar supervisor</option>
+              @for (u of usuarios(); track u.idUsuario) {
+                <option [ngValue]="u.idUsuario">{{ u.nombreCompleto }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase text-gray-500">Fecha *</label>
+          <input type="date" [(ngModel)]="form.fecha" class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500" />
+        </div>
+        <div><label class="text-xs font-semibold uppercase text-gray-500">Resultado *</label>
+          <div class="flex gap-3 mt-2">
+            <button (click)="form.cumpleRequisitos = true" class="flex-1 py-3 rounded-lg text-sm font-semibold cursor-pointer transition-all flex items-center justify-center gap-2"
+              [class]="form.cumpleRequisitos ? 'bg-green-600 text-white border-none shadow-sm' : 'bg-white text-gray-600 border border-gray-200'">
+              <span class="material-icons-outlined text-lg">check_circle</span> APROBADO</button>
+            <button (click)="form.cumpleRequisitos = false" class="flex-1 py-3 rounded-lg text-sm font-semibold cursor-pointer transition-all flex items-center justify-center gap-2"
+              [class]="!form.cumpleRequisitos ? 'bg-red-500 text-white border-none shadow-sm' : 'bg-white text-gray-600 border border-gray-200'">
+              <span class="material-icons-outlined text-lg">cancel</span> RECHAZADO</button>
+          </div>
+        </div>
+        <div><label class="text-xs font-semibold uppercase text-gray-500">Observaciones</label>
+          <textarea [(ngModel)]="form.observaciones" rows="3" placeholder="Notas de la revisión..." class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20 resize-none"></textarea></div>
+      </div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button (click)="showModal.set(false)" class="arona-btn-outline">Cancelar</button>
+        <button (click)="saveForm()" class="arona-btn-primary" [disabled]="isLoading()">{{ editingItem() ? 'Guardar' : 'Registrar' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- DELETE -->
+@if (showDeleteConfirm()) {
+  <div class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" (click)="showDeleteConfirm.set(false)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center animate-scale-in" (click)="$event.stopPropagation()">
+      <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><span class="material-icons-outlined text-red-500 text-2xl">delete_forever</span></div>
+      <h3 class="text-lg font-bold text-gray-800">¿Eliminar revisión #{{ deletingItem()?.idRevision }}?</h3>
+      <p class="text-sm text-gray-500 mt-2">Esta acción no se puede deshacer.</p>
+      <div class="flex gap-3 mt-6">
+        <button (click)="showDeleteConfirm.set(false)" class="arona-btn-outline flex-1">Cancelar</button>
+        <button (click)="executeDelete()" class="flex-1 bg-red-500 hover:bg-red-600 text-white border-none rounded-xl py-2.5 font-semibold cursor-pointer transition-all">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

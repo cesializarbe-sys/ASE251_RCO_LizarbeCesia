@@ -1,0 +1,156 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-start justify-between flex-wrap gap-4">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Gestión Agrícola</p>
+      <h1 class="text-2xl font-bold text-gray-800">Actividades de Campo</h1>
+      <p class="text-sm text-gray-500 mt-1">Registro de riegos, podas, fumigaciones y más</p>
+    </div>
+    <button id="btn-nueva-actividad" class="arona-btn-primary" (click)="openCreate()">
+      <span class="material-icons-outlined text-lg">add</span> Registrar Actividad
+    </button>
+  </div>
+
+  <!-- Resumen por tipo -->
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+    @for (tipo of tiposActividad; track tipo) {
+      <div class="arona-card p-4 text-center">
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center mx-auto mb-2" [class]="getColor(tipo)">
+          <span class="material-icons-outlined text-lg">{{ getIcon(tipo) }}</span>
+        </div>
+        <p class="text-xl font-bold text-gray-800">{{ actividades().filter(a => a.tipoActividad === tipo).length }}</p>
+        <p class="text-xs text-gray-500 mt-0.5">{{ tipo }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Feed -->
+  <div class="arona-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h2 class="text-base font-bold text-gray-800">Historial de Actividades</h2>
+      <span class="text-sm text-gray-500">{{ actividades().length }} registros</span>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-16">
+        <div class="w-8 h-8 border-4 border-[var(--color-arona-500)] border-t-transparent rounded-full animate-spin"></div>
+        <span class="ml-3 text-sm text-gray-500">Cargando...</span>
+      </div>
+    }
+
+    @if (!isLoading()) {
+      <div class="divide-y divide-gray-50">
+        @for (act of actividades(); track act.idActividad) {
+          <div class="flex items-start gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors" [class.opacity-50]="act.estado === false">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" [class]="getColor(act.tipoActividad)">
+              <span class="material-icons-outlined text-lg">{{ getIcon(act.tipoActividad) }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold text-gray-800">{{ act.tipoActividad }}</span>
+                <span class="badge badge-neutral text-xs">{{ getNombreCampo(act.idCampo) }}</span>
+                @if (act.idCultivo) {
+                  <span class="badge badge-success text-xs">{{ getNombreCultivo(act.idCultivo) }}</span>
+                }
+                <span class="badge text-xs" [class]="act.estado ? 'badge-success' : 'badge-danger'">{{ act.estado ? 'Activo' : 'Inactivo' }}</span>
+              </div>
+              @if (act.observaciones) {
+                <p class="text-xs text-gray-500 mt-1 truncate">{{ act.observaciones }}</p>
+              }
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <div class="text-right">
+                <p class="text-xs text-gray-600 font-medium">{{ formatFecha(act.fecha) }}</p>
+                @if (act.createdAt) {
+                  <p class="text-xs text-gray-400 mt-0.5">{{ formatCreatedAt(act.createdAt) }}</p>
+                }
+              </div>
+              @if (act.estado !== false) {
+                <button (click)="openEdit(act)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-green-600 hover:bg-green-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">edit</span></button>
+                <button (click)="confirmDelete(act)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"><span class="material-icons-outlined text-lg">delete</span></button>
+              } @else {
+                <button (click)="restoreActividad(act)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 border-none bg-transparent cursor-pointer" title="Restaurar"><span class="material-icons-outlined text-lg">restore</span></button>
+              }
+            </div>
+          </div>
+        }
+        @if (actividades().length === 0) {
+          <div class="py-14 text-center">
+            <span class="material-icons-outlined text-6xl text-gray-200">assignment</span>
+            <p class="text-gray-400 mt-3 font-medium">No hay actividades registradas</p>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- MODAL CREAR/EDITAR -->
+@if (showModal()) {
+  <div class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" (click)="showModal.set(false)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-scale-in" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800">{{ editingItem() ? 'Editar Actividad' : 'Registrar Actividad' }}</h2>
+        <button (click)="showModal.set(false)" class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-100 border-none bg-transparent cursor-pointer">
+          <span class="material-icons-outlined">close</span>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Tipo *</label>
+            <select id="form-actividad-tipo" [(ngModel)]="form.tipoActividad"
+              class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500">
+              @for (tipo of tiposActividad; track tipo) { <option [value]="tipo">{{ tipo }}</option> }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold uppercase text-gray-500">Fecha *</label>
+            <input type="date" [(ngModel)]="form.fecha"
+              class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500/20" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase text-gray-500">Campo *</label>
+          <select id="form-actividad-campo" [ngModel]="selectedCampoId()" (ngModelChange)="onCampoChange($event)"
+            class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500">
+            <option [value]="undefined">— Seleccionar campo —</option>
+            @for (c of campos(); track c.idCampo) { <option [value]="c.idCampo">{{ c.nombre }}</option> }
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase text-gray-500">Cultivo (opcional)</label>
+          <select [(ngModel)]="form.idCultivo"
+            class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-green-500">
+            <option [value]="undefined">— Sin cultivo específico —</option>
+            @for (cv of filteredCultivos(); track cv.idCultivo) { <option [value]="cv.idCultivo">{{ cv.nombre }}</option> }
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold uppercase text-gray-500">Observaciones</label>
+          <textarea [(ngModel)]="form.observaciones" rows="3"
+            placeholder="Detalles de la actividad..."
+            class="w-full mt-1 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none resize-none"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button (click)="showModal.set(false)" class="arona-btn-outline">Cancelar</button>
+        <button (click)="saveForm()" class="arona-btn-primary" [disabled]="isLoading()">{{ editingItem() ? 'Guardar Cambios' : 'Registrar' }}</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- DELETE CONFIRM -->
+@if (showDeleteConfirm()) {
+  <div class="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4 animate-fade-in" (click)="showDeleteConfirm.set(false)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center animate-scale-in" (click)="$event.stopPropagation()">
+      <div class="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><span class="material-icons-outlined text-red-500 text-2xl">delete_forever</span></div>
+      <h3 class="text-lg font-bold text-gray-800">¿Eliminar actividad?</h3>
+      <p class="text-sm text-gray-500 mt-2">El registro quedará como inactivo.</p>
+      <div class="flex gap-3 mt-6">
+        <button (click)="showDeleteConfirm.set(false)" class="arona-btn-outline flex-1">Cancelar</button>
+        <button (click)="executeDelete()" class="flex-1 bg-red-500 hover:bg-red-600 text-white border-none rounded-xl py-2.5 font-semibold cursor-pointer transition-all">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
